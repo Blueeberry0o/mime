@@ -1,3 +1,3 @@
-module dagg.i234.me/repos/libs/libmime
+module dagg.i234.me/libmime
 
 go 1.19
