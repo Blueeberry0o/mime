@@ -6,8 +6,8 @@ import (
 	"unicode"
 )
 
-// Variety describes a MIME type of form: Type "/" [Prefix "."] Subtype ["+" Suffix] *[";" Parameter]
-type Variety struct {
+// MIME in form: Type "/" [Prefix "."] Subtype ["+" Suffix] *[";" Parameter]
+type MIME struct {
 	Type
 	Prefix
 	Subtype string
@@ -15,23 +15,40 @@ type Variety struct {
 	Parameters map[string][]string
 }
 
-func (v *Variety) IsValid() bool {
-	if v == nil {
+func (m *MIME) IsValid() bool {
+	if m == nil {
 		return false
 	}
-	_, typeOk := RegTypes[v.Type]
-	_, preOk := RegPrefix[v.Prefix]
+	// TBD: check if other fields are defined as well
+	_, typeOk := RegTypes[m.Type]
+	_, preOk := RegPrefix[m.Prefix]
 	return typeOk && preOk
 }
 
-func (v *Variety) String() string {
-	if v == nil {
+func (m *MIME) String() string {
+	if m == nil {
 		return ""
 	}
-	return ""
+	var s = string(m.Type)
+	if m.Prefix != Standard {
+		s += string(m.Prefix) + "."
+	}
+	s += string(m.Subtype)
+	if m.Suffix != None {
+		s += "+" + string(m.Suffix)
+	}
+	for key, vals := range m.Parameters {
+		if len(key) > 0 && len(vals) > 0 {
+			for _, v := range vals {
+				s += ";" + key + "=" + v
+			}
+		}
+	}
+	return s
 }
 
-func MustParse(s string) *Variety {
+// MustParse panics in case of a parse error instead of returning the error
+func MustParse(s string) *MIME {
 	if v, e := Parse(s); e == nil {
 		return v
 	} else {
@@ -39,13 +56,14 @@ func MustParse(s string) *Variety {
 	}
 }
 
-func Parse(s string) (*Variety, error) {
+// Parse returns on success the mime.Variety representaiton of the passed string mime otherwise an error
+func Parse(s string) (*MIME, error) {
 	if len(s) == 0 {
 		return nil, ErrInvalidMimeType
 	}
 	var (
 		e error
-		v = &Variety{
+		v = &MIME{
 			Parameters: map[string][]string{},
 		}
 		m, p, _ = strings.Cut(s, ";")
@@ -53,7 +71,7 @@ func Parse(s string) (*Variety, error) {
 	if len(m) == 0 {
 		return nil, ErrInvalidMimeType
 	}
-	e = parseMimePart(m, v)
+	e = parseTree(m, v)
 	if e == nil {
 		e = parseParams(p, v)
 	}
@@ -61,11 +79,10 @@ func Parse(s string) (*Variety, error) {
 	if e != nil {
 		v = nil
 	}
-
 	return v, e
 }
 
-func parseMimePart(s string, v *Variety) error {
+func parseTree(s string, v *MIME) error {
 	if typeIdx := strings.Index(s, "/"); typeIdx > -1 {
 		v.Type = Type(s[:typeIdx])
 		s = s[typeIdx+1:]
@@ -86,7 +103,7 @@ func parseMimePart(s string, v *Variety) error {
 	return nil
 }
 
-func parseParams(s string, v *Variety) error {
+func parseParams(s string, v *MIME) error {
 	s = strings.TrimFunc(s, unicode.IsSpace)
 	if s != "" {
 		var pairs = strings.Split(s, ";")
