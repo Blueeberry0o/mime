@@ -1,3 +1,3 @@
-module dagg.i234.me/mime
+module daag.gotdns.ch/mime
 
 go 1.20
