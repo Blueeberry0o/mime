@@ -1,5 +1,7 @@
 package mime
 
+import "strings"
+
 // MIME type prefix register
 var RegPrefix = map[Prefix]struct{}{
 	Standard: {},
@@ -37,7 +39,7 @@ var RegTypes = map[Type]struct{}{
 	Video:       {},
 }
 
-// MIME Register
+// MIME type Register
 var RegMIME = map[string]*MIME{
 	"audio/3gpp":               MustParse("audio/3gpp"),
 	"video/3gpp":               MustParse("video/3gpp"),
@@ -103,14 +105,14 @@ var RegMIME = map[string]*MIME{
 	"application/vnd.visio":    MustParse("application/vnd.visio"),
 	"application/xhtml+xml":    MustParse("application/xhtml+xml"),
 
-	"application/x-7z-compressed": MustParse("application/x-7z-compressed"),
-
 	"application/vnd.ms-excel":            MustParse("application/vnd.ms-excel"),
 	"application/vnd.amazon.ebook":        MustParse("application/vnd.amazon.ebook"),
 	"application/vnd.ms-fontobject":       MustParse("application/vnd.ms-fontobject"),
 	"application/vnd.ms-powerpoint":       MustParse("application/vnd.ms-powerpoint"),
 	"application/vnd.mozilla.xul+xml":     MustParse("application/vnd.mozilla.xul+xml"),
 	"application/vnd.apple.installer+xml": MustParse("application/vnd.apple.installer+xml"),
+
+	"application/x-7z-compressed": MustParse("application/x-7z-compressed"),
 
 	"application/vnd.oasis.opendocument.text":         MustParse("application/vnd.oasis.opendocument.text"),
 	"application/vnd.oasis.opendocument.spreadsheet":  MustParse("application/vnd.oasis.opendocument.spreadsheet"),
@@ -121,81 +123,113 @@ var RegMIME = map[string]*MIME{
 	"application/vnd.openxmlformats-officedocument.presentationml.presentation": MustParse("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
 }
 
-// Extension register / mapping
-var RegExtension = map[string][]*MIME{
-	".3gp":    {RegMIME["audio/3gpp"], RegMIME["video/3gpp"]},
-	".3g2":    {RegMIME["audio/3gpp2"], RegMIME["video/3gpp2"]},
-	".7z":     {RegMIME["application/x-7z-compressed"]},
-	".aac":    {RegMIME["audio/aac"]},
-	".abw":    {RegMIME["application/x-abiword"]},
-	".arc":    {RegMIME["application/x-freearc"]},
-	".avif":   {RegMIME["image/avif"]},
-	".avi":    {RegMIME["video/x-msvideo"]},
-	".azw":    {RegMIME["application/vnd.amazon.ebook"]},
-	".bin":    {RegMIME["application/octet-stream"]},
-	".bmp":    {RegMIME["image/bmp"]},
-	".bz":     {RegMIME["application/x-bzip"]},
-	".bz2":    {RegMIME["application/x-bzip2"]},
-	".cda":    {RegMIME["application/x-cdf"]},
-	".csh":    {RegMIME["application/x-csh"]},
-	".css":    {RegMIME["text/css"]},
-	".csv":    {RegMIME["text/csv"]},
-	".doc":    {RegMIME["application/msword"]},
-	".docx":   {RegMIME["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]},
-	".eot":    {RegMIME["application/vnd.ms-fontobject"]},
-	".epub":   {RegMIME["application/epub+zip"]},
-	".gz":     {RegMIME["application/gzip"]},
-	".gif":    {RegMIME["image/gif"]},
-	".htm":    {RegMIME["text/html"]},
-	".html":   {RegMIME["text/html"]},
-	".ico":    {RegMIME["image/vnd.microsoft.icon"]},
-	".ics":    {RegMIME["text/calendar"]},
-	".jar":    {RegMIME["application/java-archive"]},
-	".jpeg":   {RegMIME["image/jpeg"]},
-	".jpg":    {RegMIME["image/jpeg"]},
-	".json":   {RegMIME["application/json"]},
-	".jsonld": {RegMIME["application/ld+json"]},
-	".mid":    {RegMIME["audio/midi"], RegMIME["audio/x-midi"]},
-	".midi":   {RegMIME["audio/midi"], RegMIME["audio/x-midi"]},
-	".mjs":    {RegMIME["text/javascript"]},
-	".mp3":    {RegMIME["audio/mpeg"]},
-	".mp4":    {RegMIME["video/mp4"]},
-	".mpeg":   {RegMIME["video/mpeg"]},
-	".mpkg":   {RegMIME["application/vnd.apple.installer+xml"]},
-	".odp":    {RegMIME["application/vnd.oasis.opendocument.presentation"]},
-	".ods":    {RegMIME["application/vnd.oasis.opendocument.spreadsheet"]},
-	".odt":    {RegMIME["application/vnd.oasis.opendocument.text"]},
-	".oga":    {RegMIME["audio/ogg"]},
-	".ogv":    {RegMIME["video/ogg"]},
-	".ogx":    {RegMIME["application/ogg"]},
-	".opus":   {RegMIME["audio/opus"]},
-	".otf":    {RegMIME["font/otf"]},
-	".png":    {RegMIME["image/png"]},
-	".pdf":    {RegMIME["application/pdf"]},
-	".php":    {RegMIME["application/x-httpd-php"]},
-	".ppt":    {RegMIME["application/vnd.ms-powerpoint"]},
-	".pptx":   {RegMIME["application/vnd.openxmlformats-officedocument.presentationml.presentation"]},
-	".rar":    {RegMIME["application/vnd.rar"]},
-	".rtf":    {RegMIME["application/rtf"]},
-	".sh":     {RegMIME["application/x-sh"]},
-	".svg":    {RegMIME["image/svg+xml"]},
-	".tar":    {RegMIME["application/x-tar"]},
-	".tif":    {RegMIME["image/tiff"]},
-	".tiff":   {RegMIME["image/tiff"]},
-	".ts":     {RegMIME["video/mp2t"]},
-	".ttf":    {RegMIME["font/ttf"]},
-	".txt":    {RegMIME["text/plain"]},
-	".vsd":    {RegMIME["application/vnd.visio"]},
-	".wav":    {RegMIME["audio/wav"]},
-	".weba":   {RegMIME["audio/webm"]},
-	".webm":   {RegMIME["video/webm"]},
-	".webp":   {RegMIME["image/webp"]},
-	".woff":   {RegMIME["font/woff"]},
-	".woff2":  {RegMIME["font/woff2"]},
-	".xhtml":  {RegMIME["application/xhtml+xml"]},
-	".xls":    {RegMIME["application/vnd.ms-excel"]},
-	".xlsx":   {RegMIME["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]},
-	".xml":    {RegMIME["application/xml"]},
-	".xul":    {RegMIME["application/vnd.mozilla.xul+xml"]},
-	".zip":    {RegMIME["application/zip"]},
+// Extensions register and related MIME-keys
+var RegExts = map[string][]string{
+	".3gp":    {"audio/3gpp", "video/3gpp"},
+	".3g2":    {"audio/3gpp2", "video/3gpp2"},
+	".7z":     {"application/x-7z-compressed"},
+	".aac":    {"audio/aac"},
+	".abw":    {"application/x-abiword"},
+	".arc":    {"application/x-freearc"},
+	".avif":   {"image/avif"},
+	".avi":    {"video/x-msvideo"},
+	".azw":    {"application/vnd.amazon.ebook"},
+	".bin":    {"application/octet-stream"},
+	".bmp":    {"image/bmp"},
+	".bz":     {"application/x-bzip"},
+	".bz2":    {"application/x-bzip2"},
+	".cda":    {"application/x-cdf"},
+	".csh":    {"application/x-csh"},
+	".css":    {"text/css"},
+	".csv":    {"text/csv"},
+	".doc":    {"application/msword"},
+	".docx":   {"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+	".eot":    {"application/vnd.ms-fontobject"},
+	".epub":   {"application/epub+zip"},
+	".gz":     {"application/gzip"},
+	".gif":    {"image/gif"},
+	".htm":    {"text/html"},
+	".html":   {"text/html"},
+	".ico":    {"image/vnd.microsoft.icon"},
+	".ics":    {"text/calendar"},
+	".jar":    {"application/java-archive"},
+	".jpeg":   {"image/jpeg"},
+	".jpg":    {"image/jpeg"},
+	".json":   {"application/json"},
+	".jsonld": {"application/ld+json"},
+	".mid":    {"audio/midi", "audio/x-midi"},
+	".midi":   {"audio/midi", "audio/x-midi"},
+	".mjs":    {"text/javascript"},
+	".mp3":    {"audio/mpeg"},
+	".mp4":    {"video/mp4"},
+	".mpeg":   {"video/mpeg"},
+	".mpkg":   {"application/vnd.apple.installer+xml"},
+	".odp":    {"application/vnd.oasis.opendocument.presentation"},
+	".ods":    {"application/vnd.oasis.opendocument.spreadsheet"},
+	".odt":    {"application/vnd.oasis.opendocument.text"},
+	".oga":    {"audio/ogg"},
+	".ogv":    {"video/ogg"},
+	".ogx":    {"application/ogg"},
+	".opus":   {"audio/opus"},
+	".otf":    {"font/otf"},
+	".png":    {"image/png"},
+	".pdf":    {"application/pdf"},
+	".php":    {"application/x-httpd-php"},
+	".ppt":    {"application/vnd.ms-powerpoint"},
+	".pptx":   {"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+	".rar":    {"application/vnd.rar"},
+	".rtf":    {"application/rtf"},
+	".sh":     {"application/x-sh"},
+	".svg":    {"image/svg+xml"},
+	".tar":    {"application/x-tar"},
+	".tif":    {"image/tiff"},
+	".tiff":   {"image/tiff"},
+	".ts":     {"video/mp2t"},
+	".ttf":    {"font/ttf"},
+	".txt":    {"text/plain"},
+	".vsd":    {"application/vnd.visio"},
+	".wav":    {"audio/wav"},
+	".weba":   {"audio/webm"},
+	".webm":   {"video/webm"},
+	".webp":   {"image/webp"},
+	".woff":   {"font/woff"},
+	".woff2":  {"font/woff2"},
+	".xhtml":  {"application/xhtml+xml"},
+	".xls":    {"application/vnd.ms-excel"},
+	".xlsx":   {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+	".xml":    {"application/xml"},
+	".xul":    {"application/vnd.mozilla.xul+xml"},
+	".zip":    {"application/zip"},
+}
+
+// GetMimeExt returns the extension for the mapped mime type or string empty if not found
+func GetMimeExt(m *MIME) string {
+	if m != nil {
+		key := m.String()
+		for ext, mimeKeys := range RegExts {
+			for _, regMime := range mimeKeys {
+				if strings.EqualFold(key, regMime) {
+					return ext
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// GetMimeExtOrDef returns the extension for the mapped mime type or the fallback value if not found
+func GetMimeExtOrDef(m *MIME, def string) string {
+	if m != nil {
+		if ext := GetMimeExt(m); ext != "" {
+			return ext
+		}
+	}
+	return def
+}
+
+func GetStringExt(s string) string {
+	if m, ok := RegMIME[s]; ok {
+		return GetMimeExt(m)
+	}
+	return ""
 }
