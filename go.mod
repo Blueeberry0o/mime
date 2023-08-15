@@ -1,3 +1,3 @@
-module daag.gotdns.ch/mime
+module github.com/blueeberry0o/mime
 
 go 1.20
